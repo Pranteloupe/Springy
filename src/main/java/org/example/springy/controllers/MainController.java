@@ -1,25 +1,33 @@
 package org.example.springy.controllers;
 
+import org.example.springy.services.LoggedUserManagementService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class MainController {
 
-    @RequestMapping("/home")
-    public String home(@RequestParam String color, @RequestParam String name, Model page) {
-        page.addAttribute("username", name);
-        page.addAttribute("color", color);
-        return "home.html";
+    private final LoggedUserManagementService loggedUserManagementService;
+
+    public MainController(LoggedUserManagementService loggedUserManagementService) {
+        this.loggedUserManagementService = loggedUserManagementService;
     }
 
-    @RequestMapping("/papa/{color}")
-    public String papa(@PathVariable String color, Model page) {
-        page.addAttribute("username", "Papa");
-        page.addAttribute("color", color);
+    @GetMapping("/home")
+    public String home(@RequestParam(required = false) String logout, Model model) {
+        if (logout != null) {
+            loggedUserManagementService.setUsername(null);
+        }
+
+        String username = loggedUserManagementService.getUsername();
+
+        if (username == null) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("username", username);
         return "home.html";
     }
 }
